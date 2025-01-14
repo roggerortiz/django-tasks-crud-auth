@@ -1,0 +1,53 @@
+{% extends "layout/_base.html"%}
+
+{% block content %}
+<div class="col-md-10 col-lg-9 col-xl-8">
+  <div class="card overflow-hidden">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="card-title m-0">Tasks</h5>
+      <a href="{% url 'create_task' %}" class="btn btn-sm btn-outline-primary py-1">
+        <i class="fa-solid fa-plus"></i>
+        Create Task
+      </a>
+    </div>
+    <div class="card-body p-0">
+      <ul class="list-group list-group-flush">
+        {% for task in tasks%}
+        <li class="list-group-item d-flex gap-2 align-items-center">
+          <form action="{% url 'complete_task' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="id" value="{{task.id}}" />
+            <button style="width: 16px; height: 16px;"
+              class="d-flex justify-content-center align-items-center border rounded-1 shadow {% if task.completed %} bg-primary {% else %} bg-transparent {% endif %}">
+              {% if task.completed %}
+              <i class="fa-solid fa-check" style="font-size: 8px;"></i>
+              {% endif %}
+            </button>
+          </form>
+          <span class="flex-fill">
+            <a href="{% url 'task_details' slug=task.slug %}"
+              class="text-white text-decoration-none me-2 {% if task.completed == True %} text-decoration-line-through fst-italic text-opacity-25 {% endif %}">
+              {{task.title}}
+            </a>
+            <span class="badge text-bg-info">{{task.user.name}}</span>
+          </span>
+          <form action="{% url 'delete_task' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="id" value="{{task.id}}" />
+            <button class="btn btn-sm btn-outline-danger py-0">
+              <i class="fa-regular fa-trash-can"></i>
+            </button>
+          </form>
+        </li>
+        {% endfor %}
+
+        {% if tasks|length == 0 %}
+        <li class="list-group-item d-flex gap-2 flex-column justify-content-center align-items-center">
+          <span class="fst-italic p-1">No tasks found</span>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
