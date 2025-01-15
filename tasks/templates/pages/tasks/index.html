@@ -1,52 +1,118 @@
-{% extends "layout/_base.html"%}
+{% extends "layout/_main.html"%}
 
 {% block content %}
-<div class="col-md-10 col-lg-9 col-xl-8">
-  <div class="card overflow-hidden">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h5 class="card-title m-0">Tasks</h5>
-      <a href="{% url 'create_task' %}" class="btn btn-sm btn-outline-primary py-1">
-        <i class="fa-solid fa-plus"></i>
-        Create Task
-      </a>
-    </div>
-    <div class="card-body p-0">
-      <ul class="list-group list-group-flush">
-        {% for task in tasks%}
-        <li class="list-group-item d-flex gap-2 align-items-center">
-          <form action="{% url 'complete_task' %}" method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="id" value="{{task.id}}" />
-            <button style="width: 16px; height: 16px;"
-              class="d-flex justify-content-center align-items-center border rounded-1 shadow {% if task.completed %} bg-primary {% else %} bg-transparent {% endif %}">
-              {% if task.completed %}
-              <i class="fa-solid fa-check" style="font-size: 8px;"></i>
-              {% endif %}
-            </button>
-          </form>
-          <span class="flex-fill">
-            <a href="{% url 'task_details' slug=task.slug %}"
-              class="text-white text-decoration-none me-2 {% if task.completed == True %} text-decoration-line-through fst-italic text-opacity-25 {% endif %}">
-              {{task.title}}
+<div class="card overflow-hidden">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="card-title m-0">Tasks</h5>
+    <a href="{% url 'create_task' %}" class="btn btn-primary py-1">
+      <i class="fa-solid fa-plus"></i>
+      Create Task
+    </a>
+  </div>
+  <div class="card-body d-flex flex-column gap-4">
+    <div class="d-flex flex-wrap gap-2">
+      <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle py-1" type="button" data-bs-toggle="dropdown"
+          aria-expanded="false">
+          <i class="fa-solid fa-filter"></i> Status
+        </button>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item {% if completed is not none and completed == 'false' %} active {% endif %}"
+              href="{% url 'tasks' %}?completed=false">
+              <i class="fa-regular fa-clock me-2"></i> Pending
             </a>
-            <span class="badge text-bg-info">{{task.user.name}}</span>
-          </span>
-          <form action="{% url 'delete_task' %}" method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="id" value="{{task.id}}" />
-            <button class="btn btn-sm btn-outline-danger py-0">
-              <i class="fa-regular fa-trash-can"></i>
-            </button>
-          </form>
-        </li>
-        {% endfor %}
+          </li>
+          <li>
+            <a class="dropdown-item {% if completed is not none and completed == 'true' %} active {% endif %}"
+              href="{% url 'tasks' %}?completed=true">
+              <i class="fa-regular fa-square-check me-2"></i> Completed
+            </a>
+          </li>
+        </ul>
+      </div>
 
-        {% if tasks|length == 0 %}
-        <li class="list-group-item d-flex gap-2 flex-column justify-content-center align-items-center">
-          <span class="fst-italic p-1">No tasks found</span>
-        </li>
-        {% endif %}
-      </ul>
+      <div>
+        <a href="{% url 'tasks' %}" class="btn btn-primary py-1">
+          <i class="fa-regular fa-circle-xmark"></i> Clean Filter
+        </a>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered m-0">
+        <thead>
+          <tr class="table-active">
+            <th scope="col" class="text-center">Title</th>
+            <th scope="col" class="text-center" style="width: 250px;">Description</th>
+            <th scope="col" class="text-center">Username</th>
+            <th scope="col" class="text-center">Created At</th>
+            <th scope="col" class="text-center">Completed At</th>
+            <th scope="col" class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task in tasks%}
+          <tr scope="row" {% if task.important %} class="table-danger" {% endif %}>
+            <td>
+              <div class="d-flex gap-2 align-items-center">
+                {% if task.important and task.completed_at is not null %}
+                <span class="fw-bold text-decoration-line-through text-danger text-opacity-50 fst-italic">
+                  {{task.title}}
+                </span>
+                {% elif not task.important and task.completed_at is not null %}
+                <span class="text-decoration-line-through text-secondary fst-italic">
+                  {{task.title}}
+                </span>
+                {% elif task.important and task.completed_at is null %}
+                <span class="fw-bold text-danger">
+                  {{task.title}}
+                </span>
+                {% elif not task.important and task.completed_at is null %}
+                <span>
+                  {{task.title}}
+                </span>
+                {% endif %}
+              </div>
+            </td>
+            <td>{{task.description}}</td>
+            <td class="text-center">{{task.user.username}}</td>
+            <td class="text-center">{{task.created_at|date:"d/m/Y h:i:s"}}</td>
+            <td class="text-center">{{task.completed_at|date:"d/m/Y h:i:s"}}</td>
+            <td>
+              <div class="d-flex gap-2 justify-content-center align-items-center">
+                <a href="{% url 'edit_task' slug=task.slug %}"
+                  class="btn {% if task.important %} btn-primary {% else %} btn-primary {% endif %} px-2 py-0">
+                  <i class="fa-regular fa-pen-to-square"></i>
+                </a>
+
+                {% if task.completed_at is null %}
+                <a href="{% url 'complete_task' slug=task.slug %}" class="btn btn-success px-2 py-0">
+                  <i class="fa-regular fa-square-check"></i>
+                </a>
+                {% else %}
+                <a href="{% url 'complete_task' slug=task.slug %}" class="btn btn-secondary px-2 py-0">
+                  <i class="fa-regular fa-clock"></i>
+                </a>
+                {% endif %}
+
+                <a href="{% url 'delete_task' slug=task.slug %}" class="btn btn-danger px-2 py-0">
+                  <i class="fa-regular fa-trash-can"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+
+          {% if tasks|length == 0 %}
+          <tr class="text-center">
+            <td colspan="6">
+              <span class="fst-italic text-secondary">No tasks found</span>
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
