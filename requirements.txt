@@ -11,9 +11,9 @@ h11==0.14.0
 packaging==24.2
 platformdirs==4.3.6
 psycopg2-binary==2.9.10
+python-dotenv==1.0.1
 sqlparse==0.5.3
 typing_extensions==4.12.2
 tzdata==2024.2
 uvicorn==0.34.0
-virtualenv==20.28.1
 whitenoise==6.8.2
