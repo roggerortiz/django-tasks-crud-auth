@@ -3,7 +3,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.defaultfilters import slugify
 from django.utils import timezone
@@ -106,7 +105,8 @@ def tasks(request):
         tasks = Task.objects.filter(user=request.user).order_by("-created_at")
 
     return render(
-        request, "pages/tasks/index.html", {"tasks": tasks, "completed": completed}
+        request, "pages/tasks/index.html", {
+            "tasks": tasks, "completed": completed}
     )
 
 

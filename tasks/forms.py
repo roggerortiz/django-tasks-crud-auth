@@ -7,7 +7,6 @@ from django.forms import (
     CheckboxInput,
     PasswordInput,
 )
-from .models import Task
 
 
 class SignUpForm(Form):
